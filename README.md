@@ -13,7 +13,7 @@ for the job directly from the app.
 - [Navigation component](https://developer.android.com/guide/navigation/navigation-getting-started)
 - [Safe Args](https://developer.android.com/guide/navigation/navigation-pass-data#Safe-args)
 - [TabLayout](https://developer.android.com/reference/com/google/android/material/tabs/TabLayout)
-- [DeffUtil with  RecyclerView](https://developer.android.com/reference/kotlin/androidx/recyclerview/widget/RecyclerView)
+- [RecyclerView](https://developer.android.com/reference/kotlin/androidx/recyclerview/widget/RecyclerView)
 - [Supporting Swipe to Refresh](https://developer.android.com/training/swipe)
 - [View Binding](https://developer.android.com/topic/libraries/view-binding)
 - [Room Database](https://developer.android.com/jetpack/androidx/releases/room) - Local Database
