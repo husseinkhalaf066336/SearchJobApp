@@ -1,5 +1,6 @@
 package com.eng_hussein_khalaf066336.searchremotejob.fragments
 
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.eng_hussein_khalaf066336.searchremotejob.MainActivity
 import com.eng_hussein_khalaf066336.searchremotejob.R
 import com.eng_hussein_khalaf066336.searchremotejob.adapters.RemoteJobAdapter
@@ -21,12 +23,15 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SearchJobFragment : Fragment(R.layout.fragment_search_job) {
+class SearchJobFragment : Fragment(R.layout.fragment_search_job),SwipeRefreshLayout.OnRefreshListener {
 
     private var _binding: FragmentSearchJobBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: RemoteJobViewModel
     private lateinit var jobAdapter: RemoteJobAdapter
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,6 +41,13 @@ class SearchJobFragment : Fragment(R.layout.fragment_search_job) {
             container,
             false
         )
+        swipeRefreshLayout = binding.swipeContainer
+        swipeRefreshLayout.setOnRefreshListener(this)
+        swipeRefreshLayout.setColorSchemeColors(Color.GREEN, Color.RED, Color.BLUE, Color.DKGRAY)
+        swipeRefreshLayout.post {
+            swipeRefreshLayout.isRefreshing = false
+            setUpRecyclerView()
+        }
         return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,23 +59,30 @@ class SearchJobFragment : Fragment(R.layout.fragment_search_job) {
         }
         else{
             Toast.makeText(requireContext(),"No Internet Connection",Toast.LENGTH_LONG).show()
+            swipeRefreshLayout.isRefreshing=false
+
+
         }
 
     }
     private fun searchJob() {
+        var job: kotlinx.coroutines.Job?=null
         binding.etSearch.addTextChangedListener { Text ->
-            MainScope().launch {
+            job?.cancel()
+            job= MainScope().launch {
                 Text?.let {
                     if (Text.toString().isNotEmpty()) {
                         viewModel.searchRemoteJob(Text.toString())
                     }
                 }
             }
-
         }
+        setUpRecyclerView()
     }
 
         private fun setUpRecyclerView() {
+            swipeRefreshLayout.isRefreshing=true
+
             jobAdapter = RemoteJobAdapter()
             binding.rvSearchJobs.apply {
                 layoutManager = LinearLayoutManager(activity)
@@ -72,6 +91,8 @@ class SearchJobFragment : Fragment(R.layout.fragment_search_job) {
             }
             viewModel.searchResult().observe(viewLifecycleOwner, { remoteJob ->
                 jobAdapter.differ.submitList(remoteJob.jobs)
+                swipeRefreshLayout.isRefreshing=false
+
 
             })
 
@@ -81,5 +102,9 @@ class SearchJobFragment : Fragment(R.layout.fragment_search_job) {
         override fun onDestroy() {
         super.onDestroy()
         _binding=null
+    }
+
+    override fun onRefresh() {
+        searchJob()
     }
 }
